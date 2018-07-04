@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>跨域通信的5中方式</title>
+</head>
+<body>
+  <script>
+    // 1. JSONP
+    // 得到航班信息查询结果后的回调函数
+    var flightHandler = function (data) {
+      alert('你查询的航班结果是：票价 ' + data.price + ' 元，' + '余票 ' + data.tickets + ' 张。');
+    };
+    // 提供jsonp服务的url地址（不管是什么类型的地址，最终生成的返回值都是一段javascript代码）
+    var url = "http://flightQuery.com/jsonp/flightResult.aspx?code=CA1998&callback=flightHandler";
+    // 创建script标签，设置其属性
+    var script = document.createElement('script');
+    script.setAttribute('src', url);
+    script.async = true;
+    // 把script标签加入head，此时调用开始
+    document.getElementsByTagName('head')[0].appendChild(script);
+
+    // 2. Hash
+    // 使用场景：当前页面A通过iframe或frame嵌入了跨域的页面B
+    // 原理：
+    //    1. Hash就是url地址#后面的东西。
+    //    2. Hash的改变页面是不刷新的，这是Hash做跨域通信的基本原理。
+    var B = document.getElementsByTagName('iframe');
+    B.src = B.src + '#' + 'data';
+    // B中的代码
+    window.onhashchange = function() {
+      var data = window.location.hash;
+    }
+
+    // 3. WebSocket
+    var ws = new WebSocket('wss://echo.websocket.org');
+    ws.onopen = function(evt) {
+      console.log('Connection open ...');
+      // 需要发送的信息
+      ws.send('Hello WebSockets!');
+    };
+    ws.onmessage  = function (evt) {
+      console.log('Received Message: ', evt.data);
+      ws.close();
+    };
+    ws.onclose = function (evt) {
+      console.log('Connection closed.');
+    };
+
+    // 4. window.postMessage()
+    // HTML5中新增加的处理跨域通信的。
+    // 窗口A向跨域的窗口B发送信息
+    Awindow.postMessage('data', 'http://B.com');
+    // 在窗口B中监听message事件，获取event对象
+    Bwindow.addEventListener('message', function(event) {
+      console.log(event.origin);
+      console.log(event.source);
+      console.log(event.data);
+    }, false);
+
+    // 5. CORS
+    // 原理：
+    //    a. 它是新出的标准，可以理解为支持跨域通信的ajax。
+    //    b. CORS为什么可以支持跨域通信？
+    //       浏览器会拦截ajax请求，如果识别到这个请求是跨域的时候，它会在http头中加一个origin来允许跨域通信。
+    // URL（必选），options（可选）
+    fetch('url', {
+      method: 'get'
+    }).then(function(response) {
+
+    }).catch(function(err) {
+
+    })
+  </script>
+</body>
+</html>
